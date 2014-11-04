@@ -63,15 +63,15 @@ class main_controller implements main_interface
 	/**
 	* Display the rules page
 	*
-	* @return Symfony\Component\HttpFoundation\Response A Symfony Response object
+	* @return \Symfony\Component\HttpFoundation\Response A Symfony Response object
 	* @access public
 	*/
 	public function display()
 	{
-		// When board rules are disbaled, redirect users back to the forum index
+		// When board rules are disabled, redirect users back to the forum index
 		if (empty($this->config['boardrules_enable']))
 		{
-			redirect(append_sid("{$this->root_path}index.$this->php_ext"));
+			redirect(append_sid("{$this->root_path}index.{$this->php_ext}"));
 		}
 
 		// Add boardrules controller language file

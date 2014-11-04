@@ -10,7 +10,7 @@
 
 namespace phpbb\boardrules\controller;
 
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
 * Admin controller
@@ -32,8 +32,8 @@ class admin_controller implements admin_interface
 	/** @var \phpbb\user */
 	protected $user;
 
-	/** @var Container */
-	protected $phpbb_container;
+	/** @var ContainerInterface */
+	protected $container;
 
 	/** @var \phpbb\boardrules\operators\rule */
 	protected $rule_operator;
@@ -55,21 +55,21 @@ class admin_controller implements admin_interface
 	* @param \phpbb\request\request               $request         Request object
 	* @param \phpbb\template\template             $template        Template object
 	* @param \phpbb\user                          $user            User object
-	* @param Container                            $phpbb_container Service container
+	* @param ContainerInterface                   $container       Service container interface
 	* @param \phpbb\boardrules\operators\rule     $rule_operator   Rule operator object
 	* @param string                               $root_path       phpBB root path
 	* @param string                               $php_ext         phpEx
 	* @return \phpbb\boardrules\controller\admin_controller
 	* @access public
 	*/
-	public function __construct(\phpbb\config\config $config, \phpbb\db\driver\driver_interface $db, \phpbb\request\request $request, \phpbb\template\template $template, \phpbb\user $user, Container $phpbb_container, \phpbb\boardrules\operators\rule $rule_operator, $root_path, $php_ext)
+	public function __construct(\phpbb\config\config $config, \phpbb\db\driver\driver_interface $db, \phpbb\request\request $request, \phpbb\template\template $template, \phpbb\user $user, ContainerInterface $container, \phpbb\boardrules\operators\rule $rule_operator, $root_path, $php_ext)
 	{
 		$this->config = $config;
 		$this->db = $db;
 		$this->request = $request;
 		$this->template = $template;
 		$this->user = $user;
-		$this->phpbb_container = $phpbb_container;
+		$this->container = $container;
 		$this->rule_operator = $rule_operator;
 		$this->root_path = $root_path;
 		$this->php_ext = $php_ext;
@@ -105,7 +105,7 @@ class admin_controller implements admin_interface
 				$this->set_options();
 
 				// Add option settings change action to the admin log
-				$phpbb_log = $this->phpbb_container->get('log');
+				$phpbb_log = $this->container->get('log');
 				$phpbb_log->add('admin', $this->user->data['user_id'], $this->user->ip, 'ACP_BOARDRULES_SETTINGS_LOG');
 
 				// Option settings have been updated and logged
@@ -131,9 +131,9 @@ class admin_controller implements admin_interface
 	* Set the options a user can configure
 	*
 	* @return null
-	* @access public
+	* @access protected
 	*/
-	public function set_options()
+	protected function set_options()
 	{
 		$this->config->set('boardrules_enable', $this->request->variable('boardrules_enable', 0));
 		$this->config->set('boardrules_header_link', $this->request->variable('boardrules_header_link', 0));
@@ -263,18 +263,21 @@ class admin_controller implements admin_interface
 		add_form_key('add_edit_rule');
 
 		// Initiate a rule entity
-		$entity = $this->phpbb_container->get('phpbb.boardrules.entity');
+		$entity = $this->container->get('phpbb.boardrules.entity');
+
+		// Build rule parent pull down menu
+		$this->build_parent_select_menu($entity, $language, $parent_id, $mode = 'add');
 
 		// Collect the form data
 		$data = array(
+			'rule_language'		=> $language,
+			'rule_parent_id'	=> $this->request->variable('rule_parent', $parent_id),
 			'rule_title'		=> $this->request->variable('rule_title', '', true),
 			'rule_anchor'		=> $this->request->variable('rule_anchor', '', true),
 			'rule_message'		=> $this->request->variable('rule_message', '', true),
 			'bbcode'			=> !$this->request->variable('disable_bbcode', false),
 			'magic_url'			=> !$this->request->variable('disable_magic_url', false),
 			'smilies'			=> !$this->request->variable('disable_smilies', false),
-			'rule_language'		=> $language,
-			'rule_parent_id'	=> $parent_id,
 		);
 
 		// Process the new rule
@@ -302,10 +305,14 @@ class admin_controller implements admin_interface
 		add_form_key('add_edit_rule');
 
 		// Initiate and load the rule entity
-		$entity = $this->phpbb_container->get('phpbb.boardrules.entity')->load($rule_id);
+		$entity = $this->container->get('phpbb.boardrules.entity')->load($rule_id);
+
+		// Build rule parent pull down menu
+		$this->build_parent_select_menu($entity);
 
 		// Collect the form data
 		$data = array(
+			'rule_parent_id'=> $this->request->variable('rule_parent', $entity->get_parent_id()),
 			'rule_title'	=> $this->request->variable('rule_title', $entity->get_title(), true),
 			'rule_anchor'	=> $this->request->variable('rule_anchor', $entity->get_anchor(), true),
 			'rule_message'	=> $this->request->variable('rule_message', $entity->get_message_for_edit(), true),
@@ -320,6 +327,7 @@ class admin_controller implements admin_interface
 		// Set output vars for display in the template
 		$this->template->assign_vars(array(
 			'S_EDIT_RULE'		=> true,
+			'S_IS_CATEGORY'		=> ($entity->get_right_id() - $entity->get_left_id() > 1) ? true : false,
 
 			'U_EDIT_ACTION'		=> "{$this->u_action}&amp;rule_id={$rule_id}&amp;action=edit",
 			'U_BACK'			=> "{$this->u_action}&amp;language={$entity->get_language()}&amp;parent_id={$entity->get_parent_id()}",
@@ -421,6 +429,12 @@ class admin_controller implements admin_interface
 				// Save the edited rule entity to the database
 				$entity->save();
 
+				// Change rule parent
+				if (isset($data['rule_parent_id']) && ($data['rule_parent_id'] != $entity->get_parent_id()))
+				{
+					$this->rule_operator->change_parent($entity->get_id(), $data['rule_parent_id']);
+				}
+
 				// Show user confirmation of the saved rule and provide link back to the previous page
 				trigger_error($this->user->lang('ACP_RULE_EDITED') . adm_back_link("{$this->u_action}&amp;language={$entity->get_language()}&amp;parent_id={$entity->get_parent_id()}"));
 			}
@@ -447,7 +461,7 @@ class admin_controller implements admin_interface
 			'S_SMILIES_DISABLE_CHECKED'		=> !$entity->message_smilies_enabled(),
 			'S_MAGIC_URL_DISABLE_CHECKED'	=> !$entity->message_magic_url_enabled(),
 
-			'BBCODE_STATUS'			=> $this->user->lang('BBCODE_IS_ON', '<a href="' . append_sid("{$this->root_path}faq.$this->php_ext", 'mode=bbcode') . '">', '</a>'),
+			'BBCODE_STATUS'			=> $this->user->lang('BBCODE_IS_ON', '<a href="' . append_sid("{$this->root_path}faq.{$this->php_ext}", 'mode=bbcode') . '">', '</a>'),
 			'SMILIES_STATUS'		=> $this->user->lang('SMILIES_ARE_ON'),
 			'IMG_STATUS'			=> $this->user->lang('IMAGES_ARE_ON'),
 			'FLASH_STATUS'			=> $this->user->lang('FLASH_IS_ON'),
@@ -476,7 +490,7 @@ class admin_controller implements admin_interface
 	public function delete_rule($rule_id)
 	{
 		// Initiate and load the rule entity
-		$entity = $this->phpbb_container->get('phpbb.boardrules.entity')->load($rule_id);
+		$entity = $this->container->get('phpbb.boardrules.entity')->load($rule_id);
 
 		// Use a confirmation box routine when deleting a rule
 		if (confirm_box(true))
@@ -490,7 +504,11 @@ class admin_controller implements admin_interface
 		else
 		{
 			// Request confirmation from the user to delete the rule
-			confirm_box(false, $this->user->lang('ACP_DELETE_RULE_CONFIRM'));
+			confirm_box(false, $this->user->lang('ACP_DELETE_RULE_CONFIRM'), build_hidden_fields(array(
+				'mode' => 'manage',
+				'action' => 'delete',
+				'rule_id' => $rule_id,
+			)));
 
 			// Use a redirect to take the user back to the previous page
 			// if the user chose not delete the rule from the confirmation page.
@@ -526,7 +544,7 @@ class admin_controller implements admin_interface
 		}
 
 		// Initiate and load the rule entity for no AJAX request
-		$entity = $this->phpbb_container->get('phpbb.boardrules.entity')->load($rule_id);
+		$entity = $this->container->get('phpbb.boardrules.entity')->load($rule_id);
 
 		// Use a redirect to reload the current page
 		redirect("{$this->u_action}&amp;language={$entity->get_language()}&amp;parent_id={$entity->get_parent_id()}");
@@ -554,11 +572,11 @@ class admin_controller implements admin_interface
 			);
 
 			// Create the notification
-			$phpbb_notifications = $this->phpbb_container->get('notification_manager');
-			$phpbb_notifications->add_notifications('boardrules', $notification_data);
+			$phpbb_notifications = $this->container->get('notification_manager');
+			$phpbb_notifications->add_notifications('phpbb.boardrules.notification.type.boardrules', $notification_data);
 
 			// Log the notification
-			$phpbb_log = $this->phpbb_container->get('log');
+			$phpbb_log = $this->container->get('log');
 			$phpbb_log->add('admin', $this->user->data['user_id'], $this->user->ip, 'ACP_BOARDRULES_NOTIFY_LOG');
 		}
 		else
@@ -582,5 +600,53 @@ class admin_controller implements admin_interface
 	public function set_page_url($u_action)
 	{
 		$this->u_action = $u_action;
+	}
+
+	/**
+	* Build pull down menu options of available rule parents
+	*
+	* @param object $entity The rule entity object
+	* @param int $language Language selection identifier; default: 0
+	* @param int $parent_id Category to display rules from; default: 0
+	* @param string $mode Display menu for add or edit mode
+	* @return null
+	* @access protected
+	*/
+	protected function build_parent_select_menu($entity, $language = 0, $parent_id = 0, $mode = 'edit')
+	{
+		$language = ($mode == 'edit') ? $entity->get_language() : $language;
+		$parent_id = ($mode == 'edit') ? $entity->get_parent_id() : $parent_id;
+
+		// Prepare rule pull-down field
+		$rule_menu_items = $this->rule_operator->get_rules($language);
+
+		$padding = '';
+		$padding_store = array();
+		$right = 0;
+
+		// Process each rule menu item for pull-down
+		foreach ($rule_menu_items as $rule_menu_item)
+		{
+			if ($rule_menu_item->get_left_id() < $right)
+			{
+				$padding .= '&nbsp;&nbsp;';
+				$padding_store[$rule_menu_item->get_parent_id()] = $padding;
+			}
+			else if ($rule_menu_item->get_left_id() > $right + 1)
+			{
+				$padding = (isset($padding_store[$rule_menu_item->get_parent_id()])) ? $padding_store[$rule_menu_item->get_parent_id()] : '';
+			}
+
+			$right = $rule_menu_item->get_right_id();
+
+			// Set output block vars for display in the template
+			$this->template->assign_block_vars('rulemenu', array(
+				'RULE_ID'			=> $rule_menu_item->get_id(),
+				'RULE_TITLE'		=> $padding . $rule_menu_item->get_title(),
+
+				'S_DISABLED'		=> ($mode == 'edit' && (($rule_menu_item->get_left_id() > $entity->get_left_id()) && ($rule_menu_item->get_right_id() < $entity->get_right_id()) || ($rule_menu_item->get_id() == $entity->get_id()))) ? true : false,
+				'S_RULE_PARENT'		=> ($rule_menu_item->get_id() == $parent_id) ? true : false,
+			));
+		}
 	}
 }
