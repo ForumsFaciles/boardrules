@@ -2,7 +2,6 @@
 /**
 *
 * Board Rules extension for the phpBB Forum Software package.
-*
 * French translation by ForumsFaciles (http://www.forumsfaciles.fr)
 *
 * @copyright (c) 2014 phpBB Limited <https://www.phpbb.com>
@@ -46,5 +45,5 @@ $lang = array_merge($lang, array(
 
 	'BOARDRULES_SAMPLE_RULE_TITLE'			=> 'Exemple de règle',
 	'BOARDRULES_SAMPLE_RULE_MESSAGE'		=> 'Ceci est un exemple de règle lors de l’installation des Règles de forum. Tout semble fonctionner. Vous pouvez modifier ou supprimer cette règle et cette catégorie et continuer à configurer vos propres règles de forum.',
-	'BOARDRULES_SAMPLE_RULE_ANCHOR'			=> 'modele-regle',
+	'BOARDRULES_SAMPLE_RULE_ANCHOR'			=> 'regle-modele',
 ));

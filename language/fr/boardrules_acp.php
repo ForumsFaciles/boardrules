@@ -2,7 +2,6 @@
 /**
 *
 * Board Rules extension for the phpBB Forum Software package.
-*
 * French translation by ForumsFaciles (http://www.forumsfaciles.fr)
 *
 * @copyright (c) 2014 phpBB Limited <https://www.phpbb.com>
@@ -47,7 +46,7 @@ $lang = array_merge($lang, array(
 	'ACP_BOARDRULES_ENABLE'					=> 'Activer les règles du forum',
 	'ACP_BOARDRULES_HEADER_LINK'			=> 'Afficher un lien vers les règles du forum dans le haut de la page',
 	'ACP_BOARDRULES_AT_REGISTRATION'		=> 'Oblige les nouveaux utilisateurs à accepter les règles lors de leur enregistrement',
-	'ACP_BOARDRULES_AT_REGISTRATION_EXPLAIN'=> 'Cette option ajoutera une clause aux “Terms of Agreement”, demandant aux nouveaux utilisateurs de lire et d’accepter les règles du forum lors de leur enregistrement.',
+	'ACP_BOARDRULES_AT_REGISTRATION_EXPLAIN'=> 'Cette option ajoutera une clause aux “Conditions d’Utilisation”, demandant aux nouveaux utilisateurs de lire et d’accepter les règles du forum lors de leur enregistrement.',
 	'ACP_BOARDRULES_NOTIFY'					=> 'Avertir les utilisateurs',
 	'ACP_BOARDRULES_NOTIFY_EXPLAIN'			=> 'Avertit tous les utilisateurs enregistrés que les règles du forum ont été mises à jour. (Cette opération peut prendre plusieurs secondes à s’exécuter sur les forums contenant des milliers de membres.)',
 	'ACP_BOARDRULES_NOTIFY_CONFIRM'			=> 'Êtes-vous vertain que vous souhaitez envoyer un avertissement à tous les utilisateurs ?',
@@ -64,6 +63,8 @@ $lang = array_merge($lang, array(
 	'ACP_BOARDRULES_EDIT_RULE'				=> 'Modifier une règle',
 	'ACP_BOARDRULES_EDIT_RULE_EXPLAIN'		=> 'Via le formulaire ci-dessous vous pouvez modifier une règle déjà existante, qui sera affichée à tous vos utilisateurs.',
 	'ACP_RULE_SETTINGS'						=> 'Paramètres de la règle',
+	'ACP_RULE_PARENT'						=> 'Rule parent',
+	'ACP_RULE_NO_PARENT'					=> 'No parent',
 	'ACP_RULE_TITLE'						=> 'Intitulé de la règle',
 	'ACP_RULE_TITLE_EXPLAIN'				=> 'Les intitulés de la règle sont affichés sur la page des règles pour les catégories de la règle uniquement. Les intitulés de la règle sont également utilisés pour identifier les règles lorsque vous les gérez via le PCA.',
 	'ACP_RULE_ANCHOR'						=> 'Ancre de la règle',

@@ -2,7 +2,6 @@
 /**
 *
 * Board Rules extension for the phpBB Forum Software package.
-*
 * French translation by ForumsFaciles (http://www.forumsfaciles.fr)
 *
 * @copyright (c) 2013 phpBB Limited <https://www.phpbb.com>

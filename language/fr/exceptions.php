@@ -2,7 +2,6 @@
 /**
 *
 * Board Rules extension for the phpBB Forum Software package.
-*
 * French translation by ForumsFaciles (http://www.forumsfaciles.fr)
 *
 * @copyright (c) 2014 phpBB Limited <https://www.phpbb.com>
@@ -54,6 +53,7 @@ $lang = array_merge($lang, array(
 	'EXCEPTION_INVALID_ARGUMENT'	=> 'Argument incorrect spécifié pour `%1$s`. Motif: %2$s',
 	'EXCEPTION_OUT_OF_BOUNDS'		=> 'Le champ `%1$s` a reçu une donnée incohérente',
 	'EXCEPTION_TOO_LONG'			=> 'La donnée saisie était plus longue que la longueur maximale possible.',
+	'EXCEPTION_NOT_UNIQUE'			=> 'La donnée n’était pas unique.',
 	'EXCEPTION_UNEXPECTED_VALUE'	=> 'Le champ `%1$s` a reçu une donnée inattendue. Motif: %2$s',
 	'EXCEPTION_ILLEGAL_CHARACTERS'	=> 'La donnée contenait des caractères interdits.',
 ));

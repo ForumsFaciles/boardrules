@@ -2,7 +2,6 @@
 /**
 *
 * Board Rules extension for the phpBB Forum Software package.
-*
 * French translation by ForumsFaciles (http://www.forumsfaciles.fr)
 *
 * @copyright (c) 2014 phpBB Limited <https://www.phpbb.com>
@@ -44,4 +43,8 @@ $lang = array_merge($lang, array(
 	'ACP_BOARDRULES'					=> 'Règles du forum',
 	'ACP_BOARDRULES_MANAGE'				=> 'Gestion des règles',
 	'ACP_BOARDRULES_SETTINGS'			=> 'Paramètres des règles',
+
+	// ACP Logs
+	'ACP_BOARDRULES_SETTINGS_LOG'	=> '<strong>Paramètres des Règles du forum modifiés</strong>',
+	'ACP_BOARDRULES_NOTIFY_LOG'		=> '<strong>Notification des Règles du forum envoyées à tous les membres</strong>',
 ));
